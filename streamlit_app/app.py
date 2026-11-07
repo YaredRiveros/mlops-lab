@@ -53,22 +53,7 @@ with col1:
     year_built = st.slider("", 1900, 2025, 2000, 1, label_visibility="collapsed", key="year")
     st.markdown(f"<script>document.getElementById('year-value').innerText = '{year_built}';</script>", unsafe_allow_html=True)
     
-    # Price per Square Foot slider
-    st.markdown(f"<p><strong>Expected Price per Sq Ft:</strong> <span id='price-per-sqft-value'></span></p>", unsafe_allow_html=True)
-    
-    # Valores por defecto basados en ubicación
-    default_price_per_sqft_map = {
-        "Rural": 180,
-        "Suburb": 320,
-        "Urban": 280,
-        "Downtown": 350,
-        "Waterfront": 450,
-        "Mountain": 250
-    }
-    
-    default_price_per_sqft = default_price_per_sqft_map.get(location, 300)
-    price_per_sqft = st.slider("", 100, 800, default_price_per_sqft, 10, label_visibility="collapsed", key="price_per_sqft")
-    st.markdown(f"<script>document.getElementById('price-per-sqft-value').innerText = '${price_per_sqft}/sq ft';</script>", unsafe_allow_html=True)
+    # Nota: no se pide "precio por pie²": se calcula con el precio, que es lo que el modelo predice (fuga del target).
     
     # Condition dropdown
     st.markdown("<p><strong>Condition</strong></p>", unsafe_allow_html=True)
@@ -97,8 +82,7 @@ with col2:
                 "bathrooms": bathrooms,
                 "location": location,
                 "year_built": year_built,
-                "condition": condition,
-                "price_per_sqft": price_per_sqft
+                "condition": condition
             }
             
             try:

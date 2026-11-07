@@ -126,6 +126,10 @@ Train your model and log everything to MLflow:
 python src/models/train_model.py   --config configs/model_config.yaml   --data data/processed/featured_house_data.csv   --models-dir models   --mlflow-tracking-uri http://localhost:5555
 ```
 
+`configs/model_config.yaml` is written by the last cell of `notebooks/03_experimentation.ipynb`: the winning model,
+its hyperparameters, the RFE features and the `quality_gate` thresholds (minimum R², maximum MAPE, beat the median
+baseline) that the training script must enforce on the fixed holdout.
+
 ---
 
 ## Building FastAPI and Streamlit

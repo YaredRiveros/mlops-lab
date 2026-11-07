@@ -25,6 +25,7 @@ mlflow==2.22.1         # End-to-end ML lifecycle tracking, including experiment 
 # ✅ TESTING
 # ---------------------------------------------
 pytest==8.4.1          # Python testing framework — great for writing unit tests for ML pipelines
+httpx==0.28.1          # HTTP client used by fastapi.testclient (API contract tests)
 
 # ---------------------------------------------
 # ⚡ API DEVELOPMENT (FOR MODEL SERVING)

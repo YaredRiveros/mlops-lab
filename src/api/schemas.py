@@ -8,7 +8,6 @@ class HousePredictionRequest(BaseModel):
     location: Literal["Rural", "Suburb", "Urban", "Downtown", "Waterfront", "Mountain"] = Field(..., description="Location type")
     year_built: int = Field(..., ge=1945, le=2023, description="Year the house was built")
     condition: Literal["Poor", "Fair", "Good", "Excellent"] = Field(..., description="Condition of the house")
-    price_per_sqft: float = Field(..., gt=50, lt=1000, description="Expected price per square foot in your area (e.g., 320)")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -18,8 +17,7 @@ class HousePredictionRequest(BaseModel):
                 "bathrooms": 1.0,
                 "location": "Rural",
                 "year_built": 1948,
-                "condition": "Poor",
-                "price_per_sqft": 182
+                "condition": "Poor"
             }
         }
     )
@@ -37,8 +35,7 @@ class BatchPredictionRequest(BaseModel):
                         "bathrooms": 1.0,
                         "location": "Rural",
                         "year_built": 1948,
-                        "condition": "Poor",
-                        "price_per_sqft": 182
+                        "condition": "Poor"
                     },
                     {
                         "sqft": 1350,
@@ -46,8 +43,7 @@ class BatchPredictionRequest(BaseModel):
                         "bathrooms": 1.0,
                         "location": "Rural",
                         "year_built": 1947,
-                        "condition": "Poor",
-                        "price_per_sqft": 184
+                        "condition": "Poor"
                     }
                 ]
             }
