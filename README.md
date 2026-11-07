@@ -132,6 +132,38 @@ baseline) that the training script must enforce on the fixed holdout.
 
 ---
 
+## 🏆 Selección del modelo (lab 13.2): RandomForest vs GradientBoosting
+
+Se compararon los modelos en `notebooks/03_experimentation.ipynb` (experimento MLflow
+"House Price Prediction Experiment"), todos con el mismo holdout fijo de 16 casas
+(columna `split` de feature engineering) y `GridSearchCV(cv=3, scoring='r2')`:
+
+| Modelo | R² | MAE | RMSE |
+| --- | --- | --- | --- |
+| **RandomForest** (n_estimators=150, max_depth=10) | **0.968** | **21 435** | **38 416** |
+| LinearRegression | 0.947 | 24 988 | 49 622 |
+| GradientBoosting | 0.945 | 26 527 | 50 802 |
+| HistGradientBoosting | 0.818 | 69 089 | 92 167 |
+
+**Queda RandomForest en `configs/model_config.yaml`** porque:
+
+1. Gana en las tres métricas del holdout: R² +0.023 y MAE ~5 100 USD menor que GradientBoosting.
+2. Es más robusto con pocos datos (61 filas de train): el bagging promedia árboles independientes,
+   mientras que el boosting encadena árboles y es más sensible al tuning y al sobreajuste.
+3. Necesita menos tuning: con los valores por defecto ya está cerca de su mejor resultado.
+4. Supera holgadamente el quality gate (`min_r2: 0.90`, `max_mape: 0.10`, mejor que el baseline de la mediana).
+
+Con un holdout tan pequeño la varianza entre corridas es alta (en la guía RF y GB se alternan el
+primer lugar), así que si en el futuro GradientBoosting gana por un margen marginal, se mantiene
+RandomForest por ser el más simple de servir y mantener.
+
+## Quality gate del entrenamiento
+
+`src/models/train_model.py` termina con **exit code 1** (y no guarda ni registra el modelo) si las
+métricas del holdout no cumplen `model.quality_gate` de `configs/model_config.yaml`. En GitHub Actions
+se puede probar lanzando el workflow con el input `min_r2=0.99`: el job Model Training falla y no se
+publica el artefacto `trained-model`.
+
 ## Building FastAPI and Streamlit
 
 The code for both the apps are available in `src/api` and `streamlit_app` already. To build and launch these apps

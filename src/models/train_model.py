@@ -1,5 +1,6 @@
 # 🔧 Script de Producción del MLOps Engineer
 import argparse
+import sys
 import pandas as pd
 import numpy as np
 import joblib
@@ -27,6 +28,8 @@ def parse_args():
     parser.add_argument("--data", type=str, required=True, help="Path to processed CSV dataset")
     parser.add_argument("--models-dir", type=str, required=True, help="Directory to save trained model")
     parser.add_argument("--mlflow-tracking-uri", type=str, default=None, help="MLflow tracking URI")
+    parser.add_argument("--min-r2", type=float, default=None,
+                        help="Sobrescribe quality_gate.min_r2 del YAML (para probar el gate)")
     return parser.parse_args()
 
 def get_model_instance(name, params):
@@ -74,14 +77,32 @@ def train_and_evaluate_model(model, X_train, y_train, X_test, y_test):
     r2 = r2_score(y_test, y_pred)
     rmse = np.sqrt(np.mean((y_test - y_pred) ** 2))
 
+    # MAPE y baseline (predecir siempre la mediana de train) para el quality gate
+    mape = float(np.mean(np.abs((y_test - y_pred) / y_test)))
+    baseline_mae = mean_absolute_error(y_test, np.full(len(y_test), y_train.median()))
+
     metrics = {
         'mae': mae,
         'r2': r2,
-        'rmse': rmse
+        'rmse': rmse,
+        'mape': mape,
+        'baseline_mae': baseline_mae,
     }
 
-    logger.info(f"Model performance - R²: {r2:.4f}, MAE: {mae:.2f}, RMSE: {rmse:.2f}")
+    logger.info(f"Model performance - R²: {r2:.4f}, MAE: {mae:.2f}, RMSE: {rmse:.2f}, "
+                f"MAPE: {mape:.2%}, baseline MAE: {baseline_mae:.2f}")
     return model, metrics
+
+def check_quality_gate(metrics, gate):
+    """Devuelve la lista de umbrales incumplidos (vacía si el modelo pasa el gate)."""
+    failures = []
+    if 'min_r2' in gate and metrics['r2'] < gate['min_r2']:
+        failures.append(f"R² {metrics['r2']:.4f} < min_r2 {gate['min_r2']}")
+    if 'max_mape' in gate and metrics['mape'] > gate['max_mape']:
+        failures.append(f"MAPE {metrics['mape']:.4f} > max_mape {gate['max_mape']}")
+    if gate.get('must_beat_baseline') and metrics['mae'] >= metrics['baseline_mae']:
+        failures.append(f"MAE {metrics['mae']:.2f} >= baseline MAE {metrics['baseline_mae']:.2f}")
+    return failures
 
 def save_model_artifacts(model, config, metrics, models_dir):
     """Guarda modelo y artefactos."""
@@ -190,6 +211,19 @@ def main():
     trained_model, metrics = train_and_evaluate_model(
         model, X_train, y_train, X_test, y_test
     )
+
+    # Quality gate (lab 13.2): si el modelo no cumple los umbrales del YAML, el job falla
+    # antes de guardar o registrar nada, y ningún modelo malo llega a los jobs siguientes.
+    gate = dict(config['model'].get('quality_gate', {}))
+    if args.min_r2 is not None:
+        gate['min_r2'] = args.min_r2
+    failures = check_quality_gate(metrics, gate)
+    if failures:
+        logger.error(f"❌ Quality gate FAILED ({gate}):")
+        for f in failures:
+            logger.error(f"   {f}")
+        sys.exit(1)
+    logger.info(f"✅ Quality gate passed: {gate}")
 
     # Guardar artefactos localmente
     model_path, config_path = save_model_artifacts(

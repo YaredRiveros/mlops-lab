@@ -15,13 +15,13 @@ model:
     rfe_method: RandomForestRegressor
     selected_features_count: 10
     total_features: 15
-  mae: 21252.29166666667
+  mae: 21434.861111111117
   name: house_price_model
   parameters:
     bootstrap: true
     ccp_alpha: 0.0
     criterion: squared_error
-    max_depth: null
+    max_depth: 10
     max_features: 1.0
     max_leaf_nodes: null
     max_samples: null
@@ -30,7 +30,7 @@ model:
     min_samples_split: 2
     min_weight_fraction_leaf: 0.0
     monotonic_cst: null
-    n_estimators: 50
+    n_estimators: 150
     n_jobs: null
     oob_score: false
     random_state: null
@@ -40,5 +40,5 @@ model:
     max_mape: 0.1
     min_r2: 0.9
     must_beat_baseline: true
-  r2_score: 0.9691087719321786
+  r2_score: 0.9683159895718437
   target_variable: price

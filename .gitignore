@@ -43,3 +43,6 @@ dist/
 
 # Salidas del pipeline: se generan con los scripts o en GitHub Actions, no se versionan
 data/processed/*.csv
+
+# Salida de train_model.py (se genera en el pipeline)
+models/trained/house_price_model.yaml
